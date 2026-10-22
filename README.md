@@ -1,23 +1,43 @@
-# Implementação de um RISC-V multiciclo
+# Testando seu RISC-V multiciclo na placa
 
-O [código fornecido a você](riscvmulti.sv) nesta simulação é uma implementação multiciclo do RISC-V, adaptada do código de Bruno Levy [^1]. Ele roda, por sua vez, o [programa adaptado do LightRISCV](fibo.asm) [^2] para gravar na memória de dados os primeiros números da sequência de Fibonacci até o limite de 32 bits. 
-
-Agora usamos o esquema de *von Neumann* (dados e instruções em uma única memória). O código fornecido está praticamente completo, você só precisa pensar nas perguntas abaixo para fornecer os valores corretos nas atribuições faltantes: 
+O objetivo desta prática é testar diretamente no kit de FPGA [o processador que você desenvolveu na simulação](https://github.com/DC-UFSCar/riscv-multi) desta semana. Aproveite o `Makefile` fornecido lá para gerar automaticamente o conteúdo da memória a partir do código *assembly*. No processador multiciclo, podemos usar a mesma memória para instruções e dados:
 
 ```verilog
-    wire writeBackEn = // Quando se escreve no banco de registradores?
-    wire [31:0] writeBackData = // O que se escreve no banco de registradores?
-    wire [31:0] LoadStoreAddress = // Como se calcula o endereço de memória para loads e stores?
-    assign Address = // Qual o endereço de memória a ser acessado? Alternar entre .text e .data dependendo do estado
-    assign MemWrite = // Em que estado se escreve na memória?
-    assign WriteData = // O que se escreve na memória?
+  // microprocessor
+  riscvmulti cpu(clk, reset, addr, writedata, memwrite, readdata);
+
+  // memory 
+  mem ram(clk, memwrite, addr, writedata, MEM_readdata);
 ```
 
-Algumas delas recebem um único sinal, outras precisam de uma função lógica entre alguns ou de operadores ternários para decidir entre duas ou mais opções **dependendo do tipo de instrução**. Use o restante do código que já está pronto para obter os valores necessários e **completar esta meia dúzia de linhas**. Você não precisa alterar mais nada além delas, mas fique à vontade se quiser propor algo diferente do que lhe foi dado. 
+O esquema de E/S mapeado em memória, [fornecido anteriormente](https://github.com/menotti/aoc/blob/main/labs/06-riscv-mono-leds/top.sv#L25), deve ser alterado da seguinte forma para suportar a leitura dos botões da placa:
 
-Nesta simulação, ao invés de olhar para a saída da simulação e comparar com a saída esperada, optou-se por salvar o conteúdo final da memória após a execução. Assim, você pode descomentar e usar livremente o `$monitor` que está no [test bench](tests/testbench.sv) para depurar o seu código. Há também uma opção comentada para salvar o conteúdo do banco de registradores que pode ajudar na depuração do código. 
+```verilog
+  // memory-mapped i/o
+  wire isIO  = addr[8]; // 0x0000_0100
+  wire isRAM = !isIO;
+  localparam IO_LEDS_bit = 2; // 0x0000_0104
+  localparam IO_HEX_bit  = 3; // 0x0000_0108
+  localparam IO_KEY_bit  = 4; // 0x0000_0110 
+  localparam IO_SW_bit   = 5; // 0x0000_0120
+  reg [23:0] hex_digits; // memory-mapped I/O register for HEX
+  dec7seg hex0(hex_digits[ 3: 0], HEX0);
+  dec7seg hex1(hex_digits[ 7: 4], HEX1);
+  dec7seg hex2(hex_digits[11: 8], HEX2);
+  dec7seg hex3(hex_digits[15:12], HEX3);
+  dec7seg hex4(hex_digits[19:16], HEX4);
+  dec7seg hex5(hex_digits[23:20], HEX5);
+  always @(posedge clk)
+    if (memwrite & isIO) begin // I/O write 
+      if (addr[IO_LEDS_bit])
+        LEDR <= writedata;
+      if (addr[IO_HEX_bit])
+        hex_digits <= writedata;
+  end
+  assign IO_readdata = addr[IO_KEY_bit] ? {32'b0, KEY} :
+                       addr[ IO_SW_bit] ? {32'b0,  SW} : 
+                                           32'b0       ;
+  assign readdata = isIO ? IO_readdata : MEM_readdata; 
+``` 
 
-## References
-[^1]: [From Blinker to RISC-V](https://github.com/BrunoLevy/learn-fpga/blob/master/FemtoRV/TUTORIALS/FROM_BLINKER_TO_RISCV/)
-[^2]: [LightRISCV](https://github.com/menotti/LightRISCV)
-
+Aproveite o *test bench* do laboratório anterior para testar o seu _software/hardware_ **antes de programar na placa**.
