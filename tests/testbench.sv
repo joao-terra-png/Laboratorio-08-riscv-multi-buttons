@@ -2,6 +2,7 @@ module testbench();
   logic        clk, reset, memwrite;
   logic [31:0] pc, instr;
   logic [31:0] writedata, addr, readdata;
+  logic [9:0] LEDR, SW;
     
   // microprocessor
   riscvmulti cpu(clk, reset, addr, writedata, memwrite, readdata);
@@ -14,6 +15,7 @@ module testbench();
     begin
       $dumpfile("dump.vcd"); $dumpvars(0);
       reset <= 1; #15 reset <= 0;
+      $monitor("LEDR=%b SW=%b, LEDR, SW");
       //$monitor("%3t PC=%h instr=%h aluIn1=%h aluIn2=%h addr=%h writedata=%h memwrite=%b readdata=%h writeBackData=%h", $time, cpu.PC, cpu.instr, cpu.SrcA, cpu.SrcB, addr, writedata, memwrite, readdata, cpu.writeBackData);
       #12000 $writememh("riscv.out", ram.RAM);
       $writememh("cpu_regs.out", cpu.RegisterBank);
