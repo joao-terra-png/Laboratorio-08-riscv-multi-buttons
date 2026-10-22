@@ -14,7 +14,7 @@ module testbench();
     begin
       $dumpfile("dump.vcd"); $dumpvars(0);
       reset <= 1; #15 reset <= 0;
-      $monitor("%3t PC=%h instr=%h aluIn1=%h aluIn2=%h addr=%h writedata=%h memwrite=%b readdata=%h writeBackData=%h", $time, cpu.PC, cpu.instr, cpu.SrcA, cpu.SrcB, addr, writedata, memwrite, readdata, cpu.writeBackData);
+      //$monitor("%3t PC=%h instr=%h aluIn1=%h aluIn2=%h addr=%h writedata=%h memwrite=%b readdata=%h writeBackData=%h", $time, cpu.PC, cpu.instr, cpu.SrcA, cpu.SrcB, addr, writedata, memwrite, readdata, cpu.writeBackData);
       #12000 $writememh("riscv.out", ram.RAM);
       $writememh("cpu_regs.out", cpu.RegisterBank);
       $finish;
