@@ -10,7 +10,7 @@ module testbench();
   // memory 
   mem ram(clk, memwrite, addr, writedata, readdata);
 
-    // memory-mapped i/o
+  // memory-mapped i/o
   wire isIO  = addr[8]; // 0x0000_0100
   wire isRAM = !isIO;
   localparam IO_LEDS_bit = 2; // 0x0000_0104
