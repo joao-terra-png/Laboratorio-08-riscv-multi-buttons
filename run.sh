@@ -1,1 +1,1 @@
-./tests/run.sh fibo
+./tests/run.sh leds
