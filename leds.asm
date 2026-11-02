@@ -1,17 +1,26 @@
-.text	# 0x00000000 
+.text    # 0x00000000 
 .globl _start
 _start:
-	la s0, b
-	lw t0, -4(s0)
-	lw t1, (s0)
+    li t0, 1
+    li t1, 512
+    li t2, 1
+    li s0, 0x104
+    li s1, 0x110
 loop:
-	add t2, t1, t0
-	add t0, zero, t1
-	add t1, zero, t2
-	addi s0, s0, 4
-	sw t2, (s0)
-	j loop
-	
-.data	# 0x00000100 
-a:	.word 0
-b:	.word 1
+bindo:
+    sw t2, 0(s0)
+    lw t3, 0(s1)
+    bne t3, 0, bindo
+indo:
+    slli t2, t2, 1
+    sw t2, 0(s0)
+    bne t2, t1, indo
+bvoltando:
+    sw t2, 0(s0)
+    lw t3, 0(s1)
+    bne t3, 0, bvoltando
+voltando:
+    srli t2, t2, 1
+    sw t2, 0(s0)
+    bne t2, t0, voltando
+j loop
