@@ -10,7 +10,8 @@ loop:
 bindo:
     sw t2, 0(s0)
     lw t3, 0(s1)
-    bne t3, 0, bindo
+    andi t3, t3, 2
+    bne t3, zero, bindo
 indo:
     slli t2, t2, 1
     sw t2, 0(s0)
@@ -18,7 +19,8 @@ indo:
 bvoltando:
     sw t2, 0(s0)
     lw t3, 0(s1)
-    bne t3, 0, bvoltando
+    andi t3, t3, 2
+    bne t3, zero, bvoltando
 voltando:
     srli t2, t2, 1
     sw t2, 0(s0)
