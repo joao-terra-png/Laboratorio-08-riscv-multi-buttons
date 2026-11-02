@@ -8,12 +8,12 @@ module riscvmulti (
 
     logic [31:0] instr, PC = 0;
 
-    wire writeBackEn = // Quando se escreve no banco de registradores?
-    wire [31:0] writeBackData = // O que se escreve no banco de registradores?
-    wire [31:0] LoadStoreAddress = // Como se calcula o endereço de memória para loads e stores?
-    assign Address = // Qual o endereço de memória a ser acessado? Alternar entre .text e .data dependendo do estado
-    assign MemWrite = // Em que estado se escreve na memória?
-    assign WriteData = // O que se escreve na memória?
+    wire writeBackEn = (state == WAIT_DATA && isLoad) || (state == EXECUTE && (isALUreg || isALUimm || isJALR || isJAL || isLUI || isAUIPC)); // Quando se escreve no banco de registradores? 
+    wire [31:0] writeBackData = isLoad ? ReadData : isJALR ? PCplus4 : isJAL ? PCplus4 : isAUIPC ? PCTarget : isLUI ? Uimm : ALUResult; // O que se escreve no banco de registradores?
+    wire [31:0] LoadStoreAddress = rs1 + (isStore ? Simm : Iimm); // Como se calcula o endereço de memória para loads e stores?
+    assign Address = (state == FETCH_INSTR || state == WAIT_INSTR) ? PC : LoadStoreAddress;  // Qual o endereço de memória a ser acessado? Alternar entre .text e .data dependendo do estado
+    assign MemWrite = (state[2:0] == STORE); // Em que estado se escreve na memória?
+    assign WriteData = rs2; // O que se escreve na memória?
 
     // The 10 RISC-V instructions
     wire isALUreg  =  (instr[6:0] == 7'b0110011); // rd <- rs1 OP rs2   
